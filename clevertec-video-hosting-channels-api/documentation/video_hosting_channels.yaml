@@ -1,0 +1,275 @@
+openapi: 3.0.3
+info:
+  title: Video Hosting Channel API
+  description: API для работы с каналами видеохостинга
+  version: 1.0.0
+servers:
+  - url: https://localhost:8080
+
+paths:
+  /api/users:
+    post:
+      summary: Создание нового пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDto'
+      responses:
+        '200':
+          description: Пользователь успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDto'
+        '400':
+          description: Неправильный запрос (недостаточно данных, ошибки валидации)
+
+    put:
+      summary: Обновление информации о пользователе
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserDto'
+      responses:
+        '200':
+          description: Информация о пользователе успешно обновлена
+        '404':
+          description: Пользователь не найден
+
+  /api/channels:
+    post:
+      summary: Создание нового канала
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChannelDto'
+      responses:
+        '200':
+          description: Канал успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChannelDto'
+        '400':
+          description: Неправильный запрос (недостаточно данных, ошибки валидации)
+
+    put:
+      summary: Обновление информации о канале
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChannelDto'
+      responses:
+        '200':
+          description: Информация о канале успешно обновлена
+        '404':
+          description: Канал не найден
+
+    get:
+      summary: Отображение списка всех каналов с пагинацией и фильтрацией по названию, языку и категории
+      parameters:
+        - name: title
+          in: query
+          description: Фильтрация по названию канала
+          required: false
+          schema:
+            type: string
+        - name: language
+          in: query
+          description: Фильтрация по языку
+          required: false
+          schema:
+            type: string
+        - name: category
+          in: query
+          description: Фильтрация по категории
+          required: false
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Номер страницы для пагинации
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: size
+          in: query
+          description: Количество элементов на странице
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Список всех каналов
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChannelSummaryDto'
+
+  /api/users/{userId}/subscribe/{channelId}:
+    post:
+      summary: Подписка пользователя на канал
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Пользователь успешно подписан на канал
+        '404':
+          description: Пользователь или канал не найден
+
+  /api/users/{userId}/unsubscribe/{channelId}:
+    post:
+      summary: Отписка пользователя от канала
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: channelId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Пользователь успешно отписан от канала
+        '404':
+          description: Пользователь или канал не найден
+
+  /api/users/{userId}/subscriptions:
+    get:
+      summary: Получение списка всех подписок пользователя
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Список подписок пользователя
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChannelTitleDto'
+        '404':
+          description: Пользователь не найден
+
+  /api/channels/{channelId}:
+    get:
+      summary: Получение подробной информации о канале (все, что в списке + описание, автор, дата создания)
+      parameters:
+        - in: path
+          name: channelId
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Подробная информация о канале
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChannelDetailsDto'
+        '404':
+          description: Канал не найден
+
+components:
+  schemas:
+    UserDto:
+      type: object
+      properties:
+        id:
+          type: integer
+        nickname:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+
+    ChannelDto:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        authorId:
+          type: integer
+        creationDate:
+          type: string
+          format: date-time
+        language:
+          type: string
+        avatar:
+          type: string
+        category:
+          type: string
+
+    ChannelTitleDto:
+      type: object
+      properties:
+        title:
+          type: string
+
+    ChannelSummaryDto:
+      type: object
+      properties:
+        title:
+          type: string
+        subscriberCount:
+          type: integer
+        language:
+          type: string
+        avatar:
+          type: string
+        category:
+          type: string
+
+    ChannelDetailsDto:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        authorId:
+          type: integer
+        creationDate:
+          type: string
+          format: date-time
+        language:
+          type: string
+        avatar:
+          type: string
+        category:
+          type: string
+        subscriberCount:
+          type: integer
